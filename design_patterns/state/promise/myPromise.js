@@ -40,6 +40,7 @@ class MyPromise {
     this.changeState('rejected');
   }
 
+  // then simply proxy to state object
   then() {
     return this.currentState.then(...arguments);
   }
@@ -154,7 +155,7 @@ class FulfilledState extends BaseState {
     }, 0);
   }
 
-  then(onFulfilled, onRejected) {
+  then(onFulfilled) {
     const newPromise = new MyPromise((resolve, reject) => {
       // don't need to queue up
       setTimeout(() => {
@@ -205,19 +206,6 @@ class RejectedState extends BaseState {
     return newPromise;
   }
 }
-
-if(!module.parent) {
-  var p = new MyPromise((resolve) => {
-    setTimeout(() => {
-      resolve(10);
-    }, 1000);
-  });
-
-  p.then((data) => {
-    console.log('data:', data);
-  })
-}
-
 
 // export adapter interface for test
 module.exports = {

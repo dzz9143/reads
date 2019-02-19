@@ -10,7 +10,7 @@ In short, there are 3 states:
 The detail of specification can be found here: https://promisesaplus.com/
 
 ## Implementation 
-The implementation uses ES6 class keywords to create the `context` and `state` class. You can easily spot the code corresponding to the state definition and transition.
+The implementation uses ES6 class keyword to create the `context` and `state` class. You can easily spot the code of state definition and transition.
 
 The purpose of this code is to demonstrate the `State Pattern` and a simple `Promise Implementation`, it's not a production-ready code.
 
