@@ -1,0 +1,1 @@
+This repo contains my understandings and thoughts on some books, blogs, techniques and anything that interests me
