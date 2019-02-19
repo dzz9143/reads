@@ -1,0 +1,15 @@
+{
+  "name": "promise",
+  "version": "1.0.0",
+  "description": "Promise represents the final result of an aysnc operation, the state of a promise describe the different lifetime stages of the async operation.",
+  "main": "myPromise.js",
+  "scripts": {
+    "test": "./node_modules/.bin/promises-aplus-tests myPromise.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "promises-aplus-tests": "^2.1.2",
+    "underscore": "^1.9.1"
+  }
+}
