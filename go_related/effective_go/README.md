@@ -1,4 +1,4 @@
-# Effective Go
+# [Effective Go](https://golang.org/doc/effective_go.html)
 
 ## Name
 * the visibility of a name `outside a package` is determined by whether `its first character is upper case`.
@@ -132,3 +132,111 @@ for i := 0; i < 5; i++ {
 }
 ```
 Deferred functions are executed in `LIFO order`, so this code will cause 4 3 2 1 0 to be printed when the function returns.
+
+
+## Data
+Go has two allocation primitives, the built-in functions `new` and `make`. They do different things and apply to different types, which can be confusing, but the rules are simple.
+
+### Allocate with new
+`new` a built-in function that allocates memory, but unlike its namesakes in some other languages it `does not initialize the memory, it only zeros it`.
+
+`new(T)` allocates zeroed storage for a new item of type T and returns its address, a value of type *T. In Go terminology, `it returns a pointer to a newly allocated zero value of type T`.
+
+### Constructors and composite literals
+```go
+func NewFile1(fd int, name string) *File {
+    if fd < 0 {
+        return nil
+    }
+    f := new(File)
+    f.fd = fd
+    f.name = name
+    f.dirinfo = nil
+    f.nepipe = 0
+    return f
+}
+
+func NewFile2(fd int, name string) *File {
+    if fd < 0 {
+        return nil
+    }
+    f := File{fd, name, nil, 0}
+    return &f
+}
+```
+Note that, unlike in C, it's perfectly OK to return the address of a local variable; `the storage associated with the variable survives after the function returns`.
+```go
+return &File{fd, name, nil, 0}
+
+// or...
+
+return &File{fd: fd, name: name}
+```
+The fields of a composite literal are laid out in order and `must all be present` (first one). However, by labeling the elements explicitly as `field:value pairs` (second one), the initializers can appear in any order, with the missing ones left as their `respective zero values`.
+
+As a limiting case, if a composite literal contains no fields at all, it creates a zero value for the type. `The expressions new(File) and &File{} are equivalent`.
+
+### Allocate with make
+It creates `slices, maps, and channels only`, and it returns an `initialized (not zeroed) value of type T` (not *T). The reason for the distinction is that these three types represent, under the covers, references to data structures that must be initialized before use.
+
+### Array
+* Arrays are values. Assigning one array to another copies all the elements
+* The size of an array is part of its type. The types [10]int and [20]int are distinct
+
+### Slice
+* most array programming in Go is done with slices rather than simple arrays
+```go
+func Append(slice, data []byte) []byte {
+    l := len(slice)
+    if l + len(data) > cap(slice) {  // reallocate
+        // Allocate double what's needed, for future growth.
+        newSlice := make([]byte, (l+len(data))*2)
+        // The copy function is predeclared and works for any slice type.
+        copy(newSlice, slice)
+        slice = newSlice
+    }
+    slice = slice[0:l+len(data)]
+    copy(slice[l:], data)
+    return slice
+}
+
+// two-dimensional
+// Allocate the top-level slice.
+picture := make([][]uint8, YSize) // One row per unit of y.
+// Loop over the rows, allocating the slice for each row.
+for i := range picture {
+	picture[i] = make([]uint8, XSize)
+}
+```
+
+### Append
+```go
+// append T
+x := []int{1,2,3}
+x = append(x, 4, 5, 6)
+fmt.Println(x)
+
+// append []T
+x := []int{1,2,3}
+y := []int{4,5,6}
+x = append(x, y...)
+fmt.Println(x)
+```
+
+## Initialization
+
+### Const
+* const are created at `compile time`
+
+### Variables
+* Variables can be initialized just like constants but the initializer can be a general expression `computed at run time` 
+
+### The init function
+* init is called after all the variable declarations in the package have evaluated their initializers, and those are evaluated only after all the imported packages have been initialized.
+* a common use of init functions is to verify or repair correctness of the program state before real execution begins
+
+## Methods (?)
+The rule about pointers vs. values for receivers is that `value methods can be invoked on pointers and values`, but `pointer methods can only be invoked on pointers`
+
+check out the implementation of bytes.Buffer
+
