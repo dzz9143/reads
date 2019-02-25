@@ -240,3 +240,59 @@ The rule about pointers vs. values for receivers is that `value methods can be i
 
 check out the implementation of bytes.Buffer
 
+## Pointer vs Value
+The rule abount Pointers vs. Values for receivers is that `value methods can be invoked on both pointers and values`, but `pointer methods can only be invoked on pointers`
+
+(!) Because `pointer methods can modify the receiver`; invoking them on a value would cause the method to receive `a copy of the value`, so any modifications would be discarded. The language therefore disallows this mistake.
+
+## Interfaces and other types
+Interfaces in go provide a way to specify the behavior of an object: all in all, `if something can do this, it can be used here`
+
+### Interfaces and methods
+A struct, an integer, `a channel`, and `a function` can implment an interface, all because interfaces are just sets of methods, which can be defined for (almost) any type
+
+## The blank identifier
+It represents a write-only value to be used as a place-holder where `a variable is needed but the actual value is irrelevant`. 
+
+* can be used to handle multiple assignments
+    ```go
+    if _, err := os.Stat(path); os.IsNotExist(err) {
+        fmt.Printf("%s does not exist\n", path)
+    }
+    ```
+* unused imports and variables
+    ```go
+    // To silence complaints about the unused imports, use a blank identifier to refer to a symbol from the imported package
+    package main
+
+    import (
+        "fmt"
+        "io"
+        "log"
+        "os"
+    )
+
+    var _ = fmt.Printf // For debugging; delete when done.
+    var _ io.Reader    // For debugging; delete when done.
+
+    func main() {
+        fd, err := os.Open("test.go")
+        if err != nil {
+            log.Fatal(err)
+        }
+        // TODO: use fd.
+        _ = fd
+    }
+    ```
+* Import for side effect
+    ```go
+    // This form of import makes clear that the package is being imported for its side effects, because there is no other possible use of the package: in this file, `it doesn't have a name`
+    import _ "net/http/pprof"
+    ```
+*  Interface check
+```go
+// If it's necessary only to ask whether a type implements an interface, without actually using the interface itself, perhaps as part of an error check, use the blank identifier to ignore the type-asserted value
+if _, ok := val.(json.Marshaler); ok {
+    fmt.Printf("value %v of type %T implements json.Marshaler\n", val, val)
+}
+```
