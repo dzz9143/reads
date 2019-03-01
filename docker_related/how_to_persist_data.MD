@@ -6,6 +6,21 @@
 * tmpfs mounts are stored in the `host system’s memory` only, and are never written to the host system’s filesystem.
 
 
+## Volume
+* Create from `docker volume create` command, Docker can create a volume `during container or service creation`
+* It is stored in a directory on the Docker host
+* It is managed by Docker and are isolated from the core functionality of the host machine
+* A given volume can be mounted into `multiple containers simultaneously`
+* Volumes also support the use of `volume drivers`, which allows you to store your data on remote host or cloud provider
+
+
+## Bind Mounts
+* A file or directory on host machine is directly mounted into the Docker container
+* The file or directory is `referenced by its full path` on the host machine
+* The file or directory does not need to exist on the docker host already, it is `created on demand` if it does not yet exist
+* Bind are very performant, but they rely on the host machine's filesystem having a specific directory structure (?)
+
+
 ## Storage Driver
 Docker uses storage drivers to manage the contents of the image layers and the writable container layer. Each storage driver handles the implementation differently, but all drivers use stackable image layers and the copy-on-write (CoW) strategy
 
