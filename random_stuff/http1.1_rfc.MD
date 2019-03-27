@@ -92,7 +92,27 @@ Headers can also be grouped according to how proxies handle them:
   * Upgrade
 Note that only hop-by-hop headers may be set using the `Connection` general header.
 
-<!-- ### specified headers -->
+### specified headers
+* X-Forwarded-For
+   - 用来代表 HTTP 请求端的 IP，如果 HTTP 请求链路上有多个 Proxy，那么这些 IP 会被依次加入到这个请求中。比如 X-Forwarded-For: client-ip, proxy-ip-01, proxy-ip-02, ...
+   - 当在客户端与服务端之前有其他中间人的时候（比如负载均衡器或者 Proxy等），服务端的 access log 只会包含负载均衡服务器和代理的 IP 地址，为了获得客户端的源 IP 地址需要使用这个请求头
+   - 最后一个直连 server 的 proxy 不需要添加自己的 IP，因为 server 可以通过获取 socket 的相关信息获取对端的 IP
+   - 需要注意的是 HTTP 是应用层的协议，HTTP 协议中并没有 IP 的概念
+   - 因为请求头可以被伪造，对于安全要求比较高的场景，不能依靠从请求头中获取的 IP
+   - 可以通过「反向代理」（比如 nginx）去强制添加真实的对端 IP 地址到这个请求头中。但是这种做法也有一些问题，因为你只能获得连接到这个反向代理对端 client 的 IP。这个对端的 client 可能正好是请求源，也可能只是一个 proxy
+   - 对于安全无关的场景，可以尝试使用这个头中的 IP 地址，但是需要验证 IP 格式
+   - 这个请求头主要用来做调试，统计分析或者用来生产基于地理位置的内容
+* Transfer-Encoding
+   - 因为 HTTP/1.1 默认是长连接，所以需要有一个方式去决定一个 HTTP 响应的长度，所以这里有两种方式去决定一个响应的长度
+   - Content-Length 可以决定这个长度，但是实际应用中实体的长度并没有那么好获得
+   - 分块编码（chunked）是对于一次传输的编码，在这种情况下 Content-Length 会被忽略
+   - 分块编码中，报文实体需要改为一系列分块来传输，每个分块包含十六进制的长度以及数据。最后一个分块长度值为 0，对应的数据分块没有内容
+   - 这里注意 Content-Encoding 是针对整个实体而言的，这是一个 End-to-End Header，而 Transfer-Encoding 是针对一次出传输的消息体而言的，是一个 Hop-by-Hop Header
+* Host
+   - Host 头主要用来做 application-level routing 的。因为一个 server 可以在一个 IP 地址上同时绑定「多个 Hostname」，那么 server 如何去区分来自于不同 Hostname 的请求呢，就需要通过这个请求头
+   - 客户端「必须」带上 Host 这个请求头
+   - 当 proxy 收到了一个 absolute-form 的请求对象，proxy 必须忽略 Host 的值并生成基于这个请求对象的一个新的 Host 头
+   - 当 proxy 不得不使用 Host 参数的时候需要额外小心，必须确定 IP 和 Host 是正常的对应关系
 
 ## References
 https://notfalse.net/50/http-intermediary
